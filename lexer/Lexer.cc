@@ -1,24 +1,49 @@
 #include "Lexer.h"
 
 #include <iostream>
+#include <cstring>
+#include <cassert>
 
 // Public method
 Lexer::Lexer(SourceBuffer &src): text {src.text} {}
 
-Token Lexer::next() {
+Token *Lexer::next() {
     // Skip whitespace
     skipWhitespace();
 
-    Token t;
+    Token *t = (Token *) malloc(sizeof(Token));
 
     // Find recognized token while not EOF and whitespace
-    while (!isEOF(*text) && !isWhitespace(*text)) {
+    while (!isEOF(*text)) {
 
         if (isIdentifier(*text)) {
+            // If first character is start with _ or alphabet then
+            // read next character.
 
+            // Hold first position of recognizable identifier
+            void *firstPos = text;
+            // Declare counter variable to keep track identifier length (min. 1)
+            uint16_t size = 1;
+
+            // Read character until isn't a recognizable identifier character stream
+            while (isIdentifier(*text++)) size++;
+            text--; // Decrement for next token
+
+            // Store and return token pair
+            t->type = TOKEN_IDENTIFIER;
+
+            t->lexeme.identifier = (char *) malloc(size);
+            memcpy(t->lexeme.identifier, firstPos, size-1);
+            t->lexeme.identifier[size] = '\0';
+
+            return t;
         }
         text++;
     }
+
+    // It should be EOF...
+    assert(isEOF(*text));
+    t->type = TOKEN_EOF;
 }
 
 // Private method
@@ -102,5 +127,5 @@ bool Lexer::isIdentifier(char &c) {
 }
 
 void Lexer::skipWhitespace() {
-    while (isWhitespace(*text++));
+    while (isWhitespace(*text)) text++;
 }

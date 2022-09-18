@@ -7,8 +7,14 @@ int main() {
     SourceBuffer src((char *) "test");
 
     Lexer lex(src);
-    lex.next();
 
-    std::cout << "Found EOF!" << std::endl;
-    std::cout << "Last character: " << *src.text << std::endl;
+    Token *tok;
+    do {
+        tok = lex.next();
+        if (tok->type == TOKEN_IDENTIFIER) {
+            std::cout << "Type: " << tok->type << "; Value: " << tok->lexeme.identifier << std::endl;
+            free(tok->lexeme.identifier);
+            free(tok);
+        }
+    } while(tok->type != TOKEN_EOF);
 }
